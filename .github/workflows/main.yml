@@ -32,8 +32,9 @@ jobs:
         # Run tests
         make test
 
-        # Build
+        # Build and package
         make
+        make zip
 
         # Generate the changelog
         go run main.go
