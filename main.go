@@ -286,6 +286,7 @@ func main() {
 	}
 
 	if conf.Repo != "" {
+		output += "\n"
 		// Create diffs for releases
 		for i, release := range releases {
 			if release.name == conf.Unreleased {

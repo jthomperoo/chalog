@@ -31,6 +31,17 @@ It is important that when you create your markdown files as part of your changel
 top level headers (e.g. `# Added`) because chalog uses these headers to group changes. If no header is provided, the
 file will be ignored.
 
+## Installation
+
+If using a Go development environment, chalog can be installed by running:
+
+```bash
+go install github.com/jthomperoo/chalog@v0.1.0
+```
+
+Otherwise, the packaged binaries can be used, [check out the available binaries for `v0.1.0` from the GitHub releases
+page here](https://github.com/jthomperoo/chalog/releases/tag/v0.1.0).
+
 ## Quick start
 
 1. Install chalog.
