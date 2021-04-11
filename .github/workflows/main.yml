@@ -36,7 +36,7 @@ jobs:
         make
 
         # Generate the changelog
-        go run main.go --repo 'https://github.com/jthomperoo/chalog'
+        go run main.go
 
     - name: Publish changelog
       if: github.event_name == 'release'
@@ -51,7 +51,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_linux_386.zip
-        path: chalog_linux_386.zip
+        path: dist/chalog_linux_386.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish linux amd64
@@ -59,7 +59,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_linux_amd64.zip
-        path: chalog_linux_amd64.zip
+        path: dist/chalog_linux_amd64.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish linux arm
@@ -67,7 +67,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_linux_arm.zip
-        path: chalog_linux_arm.zip
+        path: dist/chalog_linux_arm.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish linux arm64
@@ -75,7 +75,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_linux_arm64.zip
-        path: chalog_linux_arm64.zip
+        path: dist/chalog_linux_arm64.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish darwin amd64
@@ -83,7 +83,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_darwin_amd64.zip
-        path: chalog_darwin_amd64.zip
+        path: dist/chalog_darwin_amd64.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish darwin arm64
@@ -91,7 +91,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_darwin_arm64.zip
-        path: chalog_darwin_arm64.zip
+        path: dist/chalog_darwin_arm64.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish windows 386
@@ -99,7 +99,7 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_windows_386.zip
-        path: chalog_windows_386.zip
+        path: dist/chalog_windows_386.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish windows amd64
@@ -107,5 +107,5 @@ jobs:
       uses: Shopify/upload-to-release@1.0.0
       with:
         name: chalog_windows_amd64.zip
-        path: chalog_windows_amd64.zip
+        path: dist/chalog_windows_amd64.zip
         repo-token: ${{ secrets.GITHUB_TOKEN }}
