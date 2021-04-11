@@ -12,10 +12,12 @@ import (
 	"sort"
 	"strings"
 
+	mdrenderer "github.com/Kunde21/markdownfmt/v2/markdown"
 	"github.com/Masterminds/semver"
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/ast"
-	mmark "github.com/mmarkdown/mmark/render/markdown"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/ast"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/text"
 	"gopkg.in/yaml.v2"
 )
 
@@ -23,8 +25,8 @@ const (
 	changelogTemplate = `# Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-`
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).`
 	firstDiffTemplate      = "\n[%s]: %s/releases/tag/%s"
 	compareDiffTemplate    = "\n[%s]: %s/compare/%s...%s"
 	unreleasedDiffTemplate = "\n[%s]: %s/compare/%s...HEAD"
@@ -83,11 +85,6 @@ func main() {
 	unreleasedOpt := *unreleasedFlag
 	configOpt := *configFlag
 
-	markdownRenderer := mmark.NewRenderer(mmark.RendererOptions{
-		TextWidth: lineWidth,
-		Flags:     mmark.CommonFlags,
-	})
-
 	// Read in config file
 	configData, err := ioutil.ReadFile(configOpt)
 	if err != nil {
@@ -105,6 +102,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	md := goldmark.New(
+		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithRenderer(mdrenderer.NewRenderer()),
+	)
+
+	parser := md.Parser()
+	renderer := md.Renderer()
 
 	releases := []release{}
 
@@ -177,28 +182,38 @@ func main() {
 				log.Fatal(err)
 			}
 
-			mdRoot := markdown.Parse(dat, nil)
+			mdRoot := parser.Parse(text.NewReader(dat))
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			children := mdRoot.GetChildren()
-
 			var currentCategory string
 			var categoryText string
 
-			for _, child := range children {
-				switch v := child.(type) {
-				case *ast.Heading:
-					headingTitle := string(v.GetChildren()[0].AsLeaf().Literal)
+			head := mdRoot.FirstChild()
+
+			for head != nil {
+				kind := head.Kind()
+
+				if kind.String() == "Heading" {
+					heading := head.(*ast.Heading)
+					headingText := heading.BaseBlock.FirstChild().(*ast.Text)
+					headingTitle := string(headingText.Segment.Value(dat))
 					if currentCategory != "" {
 						newRelease.categories[currentCategory] = categoryText
 					}
 					currentCategory = headingTitle
 					categoryText = newRelease.categories[currentCategory]
-				default:
-					categoryText += string(markdown.Render(child, markdownRenderer))
+				} else {
+					writer := bytes.Buffer{}
+					err = renderer.Render(&writer, dat, head)
+					if err != nil {
+						log.Fatal(err)
+					}
+					categoryText += strings.TrimPrefix(writer.String(), "\n")
 				}
+
+				head = head.NextSibling()
 			}
 
 			if currentCategory != "" {
@@ -222,9 +237,17 @@ func main() {
 		}
 	}
 
-	parsedTemplate := markdown.Parse([]byte(changelogTemplate), nil)
+	textSource := text.NewReader([]byte(changelogTemplate))
 
-	output := string(markdown.Render(parsedTemplate, markdownRenderer))
+	parsedTemplate := parser.Parse(textSource)
+
+	writer := bytes.Buffer{}
+
+	err = renderer.Render(&writer, []byte(changelogTemplate), parsedTemplate)
+	if err != nil {
+		log.Fatal(err)
+	}
+	output := writer.String()
 
 	if !providedReleasesFile {
 		// Sort releases by semantic versioning, if the release names are not valid semantic versions they will be
@@ -258,7 +281,7 @@ func main() {
 		}
 		for categoryName, category := range release.categories {
 			output += fmt.Sprintf("### %s\n", categoryName)
-			output += category
+			output += fmt.Sprintf("%s", category)
 		}
 	}
 
@@ -283,5 +306,5 @@ func main() {
 		}
 	}
 
-	err = ioutil.WriteFile(conf.Out, []byte(output), 0644)
+	err = ioutil.WriteFile(conf.Out, []byte(output+"\n"), 0644)
 }
