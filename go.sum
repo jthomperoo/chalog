@@ -7,3 +7,7 @@ github.com/gomarkdown/markdown v0.0.0-20210408062403-ad838ccf8cdd/go.mod h1:aii0
 github.com/mmarkdown/mmark v2.0.40+incompatible h1:vMeUeDzBK3H+/mU0oMVfMuhSXJlIA+DE/DMPQNAj5C4=
 github.com/mmarkdown/mmark v2.0.40+incompatible/go.mod h1:Uvmoz7tvsWpr7bMVxIpqZPyN3FbOtzDmnsJDFp7ltJs=
 golang.org/dl v0.0.0-20190829154251-82a15e2f2ead/go.mod h1:IUMfjQLJQd4UTqG1Z90tenwKoCX93Gn3MAQJMOSBsDQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
