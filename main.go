@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/Masterminds/semver"
 	"github.com/gomarkdown/markdown"
@@ -24,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 	compareDiffTemplate    = "\n[%s]: %s/compare/%s...%s"
 	unreleasedDiffTemplate = "\n[%s]: %s/compare/%s...HEAD"
 	lineWidth              = 120
+	releasesFileName       = "releases.txt"
 )
 
 const (
@@ -35,6 +40,7 @@ const (
 
 type release struct {
 	name       string
+	meta       string
 	categories map[string]string
 }
 
@@ -61,18 +67,59 @@ func main() {
 		Flags:     mmark.CommonFlags,
 	})
 
+	releases := []release{}
+
+	// First check for releases.txt, if it exists read it in
+	providedReleasesFile := true
+	releaseFileDat, err := ioutil.ReadFile(filepath.Join(changelogDir, releasesFileName))
+	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Fatal(err)
+		}
+		// file doesn't exist
+		providedReleasesFile = false
+	}
+
+	if providedReleasesFile {
+		scanner := bufio.NewScanner(bytes.NewReader(releaseFileDat))
+		for scanner.Scan() {
+			line := scanner.Text()
+			if line == "" {
+				continue
+			}
+
+			parts := strings.Split(line, ",")
+
+			name := parts[0]
+
+			if len(parts) < 2 {
+				releases = append(releases, release{
+					name: name,
+				})
+				continue
+			}
+
+			meta := parts[1]
+
+			releases = append(releases, release{
+				name: name,
+				meta: meta,
+			})
+		}
+	}
+
 	releaseDirectories, err := ioutil.ReadDir(changelogDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	releases := []release{}
 	for _, releaseDir := range releaseDirectories {
 		if !releaseDir.IsDir() {
 			continue
 		}
 		releaseName := releaseDir.Name()
-		release := release{
+
+		newRelease := release{
 			name:       releaseName,
 			categories: make(map[string]string),
 		}
@@ -106,52 +153,70 @@ func main() {
 				case *ast.Heading:
 					headingTitle := string(v.GetChildren()[0].AsLeaf().Literal)
 					if currentCategory != "" {
-						release.categories[currentCategory] = categoryText
+						newRelease.categories[currentCategory] = categoryText
 					}
 					currentCategory = headingTitle
-					categoryText = release.categories[currentCategory]
+					categoryText = newRelease.categories[currentCategory]
 				default:
 					categoryText += string(markdown.Render(child, markdownRenderer))
 				}
 			}
 
 			if currentCategory != "" {
-				release.categories[currentCategory] = categoryText
+				newRelease.categories[currentCategory] = categoryText
 			}
 
 		}
 
-		releases = append(releases, release)
+		alreadySet := false
+
+		for i, release := range releases {
+			if release.name == newRelease.name {
+				releases[i].categories = newRelease.categories
+				alreadySet = true
+				break
+			}
+		}
+
+		if !alreadySet {
+			releases = append(releases, newRelease)
+		}
 	}
 
 	parsedTemplate := markdown.Parse([]byte(changelogTemplate), nil)
 
 	output := string(markdown.Render(parsedTemplate, markdownRenderer))
 
-	// Sort releases by semantic versioning, if the release names are not valid semantic versions they will be
-	// sorted alphabetically, if there is a mix of semvers and not semvers, the non semvers will be placed first
-	sort.Slice(releases, func(i, j int) bool {
-		iV, iErr := semver.NewVersion(releases[i].name)
-		jV, jErr := semver.NewVersion(releases[j].name)
-		if iErr != nil || jErr != nil {
-			// If i or j is not a semantic version
-			if iErr != nil && jErr != nil {
-				// If both are not not semantic versions, just compare alphabetically
-				return releases[i].name < releases[j].name
+	if !providedReleasesFile {
+		// Sort releases by semantic versioning, if the release names are not valid semantic versions they will be
+		// sorted alphabetically, if there is a mix of semvers and not semvers, the non semvers will be placed first
+		sort.Slice(releases, func(i, j int) bool {
+			iV, iErr := semver.NewVersion(releases[i].name)
+			jV, jErr := semver.NewVersion(releases[j].name)
+			if iErr != nil || jErr != nil {
+				// If i or j is not a semantic version
+				if iErr != nil && jErr != nil {
+					// If both are not not semantic versions, just compare alphabetically
+					return releases[i].name < releases[j].name
+				}
+				if iErr != nil {
+					// If just i is not a semantic version
+					return true
+				}
+				// If just j is not a semantic version
+				return false
 			}
-			if iErr != nil {
-				// If just i is not a semantic version
-				return true
-			}
-			// If just j is not a semantic version
-			return false
-		}
-		return iV.GreaterThan(jV)
-	})
+			return iV.GreaterThan(jV)
+		})
+	}
 
 	// Create releases section
 	for _, release := range releases {
-		output += fmt.Sprintf("\n## [%s]\n", release.name)
+		if release.meta != "" {
+			output += fmt.Sprintf("\n## [%s] - %s\n", release.name, release.meta)
+		} else {
+			output += fmt.Sprintf("\n## [%s]\n", release.name)
+		}
 		for categoryName, category := range release.categories {
 			output += fmt.Sprintf("### %s\n", categoryName)
 			output += category
@@ -162,7 +227,7 @@ func main() {
 		// Create diffs for releases
 		for i, release := range releases {
 			if release.name == unreleasedName {
-				if len(releases) < 2 {
+				if i+1 >= len(releases) {
 					// Only needed to add in diff section if there is an actual release, if only unreleased no need
 					continue
 				}

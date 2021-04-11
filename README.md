@@ -75,6 +75,30 @@ Usage of chalog:
     	the release name that should be treated as a the 'unreleased' section (default "Unreleased")
 ```
 
+### Releases file
+
+The chalog tool allows you to provide an optional `releases.txt` file inside your changelog directory, which allows
+you to provide an ordering for the releases in the changelog, and to optionally provide metadata (e.g. the date of a
+release). If this file does not exist then the releases will just be sorted according to semantic versioning (as best
+as possible) and without any metadata.
+
+To use the releases file, create a `releases.txt` in the changelog directory with the following format:
+
+```txt
+v0.2.0, 2021-04-01
+v0.1.0, 2021-03-07
+```
+
+This will result in a generated changelog which will follow this order, with the dates provided appended as metadata
+to the release:
+
+```
+## [v0.1.0] - 2021-03-07
+```
+
+If a release is mentioned in the releases file, but there is no directory, the release will be added to the changelog
+with no changes listed.
+
 ## Contributing
 
 Feel free to contribute to this project, here's some useful info for getting set up.
