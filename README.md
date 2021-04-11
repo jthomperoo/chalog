@@ -65,6 +65,8 @@ optional.
 
 ```
 Usage of chalog:
+  -config string
+    	the optional path to the config file to load (default ".chalog.yml")
   -in string
     	the directory for storing the changelog files (default ".changelog")
   -out string
@@ -92,12 +94,33 @@ v0.1.0, 2021-03-07
 This will result in a generated changelog which will follow this order, with the dates provided appended as metadata
 to the release:
 
-```
+```markdown
 ## [v0.1.0] - 2021-03-07
 ```
 
 If a release is mentioned in the releases file, but there is no directory, the release will be added to the changelog
 with no changes listed.
+
+### Config file
+
+The chalog tool allows you to provide an optional YAML configuration, which lets you set any option that is avaialble
+as a command line option (other than `config`) through a YAML file, which can be easily stored in source control.
+
+The default location of the configuration file is `.chalog.yml` in the directory chalog is run in, if there is no
+file provided it will ignore it and continue as normal. A path to the configuration file can be provided with the
+`-config` command line option, e.g. `-config my_chalog_config.yml`.
+
+The YAML configuration looks like this:
+
+```yaml
+in: .changelog
+out: CHANGELOG.md
+unreleased: Unreleased
+repo: https://github.com/jthomperoo/chalog
+```
+
+The configuration file is given the most priority, so it will override any command line configuration options if
+also provided.
 
 ## Contributing
 

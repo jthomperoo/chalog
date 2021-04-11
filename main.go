@@ -16,6 +16,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	mmark "github.com/mmarkdown/mmark/render/markdown"
+	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -32,11 +33,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 )
 
 const (
-	defaultChangelogDir      = ".changelog"
-	defaultChangelogFile     = "CHANGELOG.md"
-	defaultRepositoryBaseURL = ""
-	defaultUnreleasedName    = "Unreleased"
+	defaultIn         = ".changelog"
+	defaultOut        = "CHANGELOG.md"
+	defaultRepo       = ""
+	defaultUnreleased = "Unreleased"
+	defaultConfig     = ".chalog.yml"
 )
+
+type config struct {
+	In         string `yaml:"in"`
+	Out        string `yaml:"out"`
+	Repo       string `yaml:"repo"`
+	Unreleased string `yaml:"unreleased"`
+}
+
+func loadConfig(data []byte, conf *config) (*config, error) {
+	err := yaml.Unmarshal([]byte(data), conf)
+	if err != nil {
+		return nil, err
+	}
+
+	return conf, nil
+}
 
 type release struct {
 	name       string
@@ -46,32 +64,53 @@ type release struct {
 
 func main() {
 
-	changelogDirFlag := flag.String("in", defaultChangelogDir,
+	inFlag := flag.String("in", defaultIn,
 		"the directory for storing the changelog files")
-	changelogFileFlag := flag.String("out", defaultChangelogFile,
+	outFlag := flag.String("out", defaultOut,
 		"the changelog file to output to")
-	repositoryBaseURLFlag := flag.String("repo", defaultRepositoryBaseURL,
+	repoFlag := flag.String("repo", defaultRepo,
 		"the repository base url, include the protocol (http/https etc.)")
-	unreleasedNameFlag := flag.String("unreleased", defaultUnreleasedName,
+	unreleasedFlag := flag.String("unreleased", defaultUnreleased,
 		"the release name that should be treated as a the 'unreleased' section")
+	configFlag := flag.String("config", defaultConfig,
+		"the optional path to the config file to load")
 
 	flag.Parse()
 
-	changelogDir := *changelogDirFlag
-	changelogFile := *changelogFileFlag
-	repositoryBaseURL := *repositoryBaseURLFlag
-	unreleasedName := *unreleasedNameFlag
+	inOpt := *inFlag
+	outOpt := *outFlag
+	repoOpt := *repoFlag
+	unreleasedOpt := *unreleasedFlag
+	configOpt := *configFlag
 
 	markdownRenderer := mmark.NewRenderer(mmark.RendererOptions{
 		TextWidth: lineWidth,
 		Flags:     mmark.CommonFlags,
 	})
 
+	// Read in config file
+	configData, err := ioutil.ReadFile(configOpt)
+	if err != nil {
+		if !os.IsNotExist(err) {
+			log.Fatal(err)
+		}
+	}
+
+	conf, err := loadConfig(configData, &config{
+		In:         inOpt,
+		Out:        outOpt,
+		Repo:       repoOpt,
+		Unreleased: unreleasedOpt,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	releases := []release{}
 
 	// First check for releases.txt, if it exists read it in
 	providedReleasesFile := true
-	releaseFileDat, err := ioutil.ReadFile(filepath.Join(changelogDir, releasesFileName))
+	releaseFileDat, err := ioutil.ReadFile(filepath.Join(conf.In, releasesFileName))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.Fatal(err)
@@ -108,7 +147,7 @@ func main() {
 		}
 	}
 
-	releaseDirectories, err := ioutil.ReadDir(changelogDir)
+	releaseDirectories, err := ioutil.ReadDir(conf.In)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +163,7 @@ func main() {
 			categories: make(map[string]string),
 		}
 
-		changeFiles, err := ioutil.ReadDir(filepath.Join(changelogDir, releaseName))
+		changeFiles, err := ioutil.ReadDir(filepath.Join(conf.In, releaseName))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -133,7 +172,7 @@ func main() {
 				continue
 			}
 
-			dat, err := ioutil.ReadFile(filepath.Join(changelogDir, releaseName, changeFile.Name()))
+			dat, err := ioutil.ReadFile(filepath.Join(conf.In, releaseName, changeFile.Name()))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -223,26 +262,26 @@ func main() {
 		}
 	}
 
-	if repositoryBaseURL != "" {
+	if conf.Repo != "" {
 		// Create diffs for releases
 		for i, release := range releases {
-			if release.name == unreleasedName {
+			if release.name == conf.Unreleased {
 				if i+1 >= len(releases) {
 					// Only needed to add in diff section if there is an actual release, if only unreleased no need
 					continue
 				}
-				output += fmt.Sprintf(unreleasedDiffTemplate, release.name, repositoryBaseURL, releases[i+1].name)
+				output += fmt.Sprintf(unreleasedDiffTemplate, release.name, conf.Repo, releases[i+1].name)
 				continue
 			}
 			if i == len(releases)-1 {
 				// Last one, therefore it's the first release
-				output += fmt.Sprintf(firstDiffTemplate, release.name, repositoryBaseURL, release.name)
+				output += fmt.Sprintf(firstDiffTemplate, release.name, conf.Repo, release.name)
 				continue
 			}
 			// Normal, compare with previous
-			output += fmt.Sprintf(compareDiffTemplate, release.name, repositoryBaseURL, releases[i+1].name, release.name)
+			output += fmt.Sprintf(compareDiffTemplate, release.name, conf.Repo, releases[i+1].name, release.name)
 		}
 	}
 
-	err = ioutil.WriteFile(changelogFile, []byte(output), 0644)
+	err = ioutil.WriteFile(conf.Out, []byte(output), 0644)
 }
