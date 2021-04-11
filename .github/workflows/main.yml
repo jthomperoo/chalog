@@ -1,0 +1,111 @@
+name: main
+on:
+  push:
+  pull_request:
+  release:
+    types: [created]
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go 1.16
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.16
+      id: go
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+    - name: Lint, test and build
+      run: |
+        # Get golint
+        export PATH=$PATH:$(go env GOPATH)/bin
+        go install golang.org/x/lint/golint@v0.0.0-20201208152925-83fdc39ff7b5
+
+        # Lint and beautify
+        make lint
+        make beautify
+
+        # Exit if after beautification there are any code differences
+        git diff --exit-code
+
+        # Run tests
+        make test
+
+        # Build
+        make
+
+        # Generate the changelog
+        go run main.go --repo 'https://github.com/jthomperoo/chalog'
+
+    - name: Publish changelog
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: CHANGELOG.md
+        path: CHANGELOG.md
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish linux 386
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_linux_386.zip
+        path: chalog_linux_386.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish linux amd64
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_linux_amd64.zip
+        path: chalog_linux_amd64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish linux arm
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_linux_arm.zip
+        path: chalog_linux_arm.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish linux arm64
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_linux_arm64.zip
+        path: chalog_linux_arm64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish darwin amd64
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_darwin_amd64.zip
+        path: chalog_darwin_amd64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish darwin arm64
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_darwin_arm64.zip
+        path: chalog_darwin_arm64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish windows 386
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_windows_386.zip
+        path: chalog_windows_386.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Publish windows amd64
+      if: github.event_name == 'release'
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: chalog_windows_amd64.zip
+        path: chalog_windows_amd64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
