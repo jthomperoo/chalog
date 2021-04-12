@@ -132,8 +132,8 @@ unreleased: Unreleased
 repo: https://github.com/jthomperoo/chalog
 ```
 
-The configuration file is given the most priority, so it will override any command line configuration options if
-also provided.
+The configuration file is overridden by any command line options provided, so can act as sensible defaults that
+can be modified by adjusting command line options provided.
 
 ## Contributing
 

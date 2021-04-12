@@ -42,6 +42,15 @@ const (
 )
 
 const (
+	flagIn         = "in"
+	flagOut        = "out"
+	flagRepo       = "repo"
+	flagUnreleased = "unreleased"
+	flagConfig     = "config"
+	flagTarget     = "target"
+)
+
+const (
 	defaultIn         = ".changelog"
 	defaultOut        = "CHANGELOG.md"
 	defaultRepo       = ""
@@ -58,7 +67,18 @@ type config struct {
 	Target     targetType `yaml:"target"`
 }
 
-func loadConfig(data []byte, conf *config) (*config, error) {
+func loadDefaults() *config {
+	return &config{
+		In:         defaultIn,
+		Out:        defaultOut,
+		Repo:       defaultRepo,
+		Unreleased: defaultUnreleased,
+		Target:     defaultTarget,
+	}
+}
+
+func loadConfig(data []byte) (*config, error) {
+	conf := loadDefaults()
 	err := yaml.Unmarshal([]byte(data), conf)
 	if err != nil {
 		return nil, err
@@ -73,47 +93,62 @@ type release struct {
 	categories map[string]string
 }
 
+func isFlagPassed(name string) bool {
+	found := false
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == name {
+			found = true
+		}
+	})
+	return found
+}
+
 func main() {
 
-	inFlag := flag.String("in", defaultIn,
+	inFlag := flag.String(flagIn, defaultIn,
 		"the directory for storing the changelog files")
-	outFlag := flag.String("out", defaultOut,
+	outFlag := flag.String(flagOut, defaultOut,
 		"the changelog file to output to")
-	repoFlag := flag.String("repo", defaultRepo,
+	repoFlag := flag.String(flagRepo, defaultRepo,
 		"the repository base url, include the protocol (http/https etc.)")
-	unreleasedFlag := flag.String("unreleased", defaultUnreleased,
+	unreleasedFlag := flag.String(flagUnreleased, defaultUnreleased,
 		"the release name that should be treated as a the 'unreleased' section")
-	configFlag := flag.String("config", defaultConfig,
+	configFlag := flag.String(flagConfig, defaultConfig,
 		"path to the config file to load")
-	targetFlag := flag.String("target", string(defaultTarget),
+	targetFlag := flag.String(flagTarget, string(defaultTarget),
 		"target to output to, e.g. stdout or a file")
 
 	flag.Parse()
 
-	inOpt := *inFlag
-	outOpt := *outFlag
-	repoOpt := *repoFlag
-	unreleasedOpt := *unreleasedFlag
-	configOpt := *configFlag
-	targetOpt := *targetFlag
+	configFilePath := *configFlag
 
 	// Read in config file
-	configData, err := ioutil.ReadFile(configOpt)
+	configData, err := ioutil.ReadFile(configFilePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.Fatal(err)
 		}
 	}
 
-	conf, err := loadConfig(configData, &config{
-		In:         inOpt,
-		Out:        outOpt,
-		Repo:       repoOpt,
-		Unreleased: unreleasedOpt,
-		Target:     targetType(targetOpt),
-	})
+	conf, err := loadConfig(configData)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if isFlagPassed(flagIn) {
+		conf.In = *inFlag
+	}
+	if isFlagPassed(flagOut) {
+		conf.Out = *outFlag
+	}
+	if isFlagPassed(flagRepo) {
+		conf.Repo = *repoFlag
+	}
+	if isFlagPassed(flagUnreleased) {
+		conf.Unreleased = *unreleasedFlag
+	}
+	if isFlagPassed(flagTarget) {
+		conf.Target = targetType(*targetFlag)
 	}
 
 	md := goldmark.New(
