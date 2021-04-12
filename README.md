@@ -102,8 +102,8 @@ as possible) and without any metadata.
 To use the releases file, create a `releases.txt` in the changelog directory with the following format:
 
 ```txt
-v0.2.0, 2021-04-01
-v0.1.0, 2021-03-07
+v0.2.0,2021-04-01
+v0.1.0,2021-03-07
 ```
 
 This will result in a generated changelog which will follow this order, with the dates provided appended as metadata
@@ -136,6 +136,11 @@ repo: https://github.com/jthomperoo/chalog
 
 The configuration file is overridden by any command line options provided, so can act as sensible defaults that
 can be modified by adjusting command line options provided.
+
+## Libraries
+
+This project makes extensive use of a number of key libraries, including using a modified Markdown renderer taken from
+[github.com/Kunde21/markdownfmt](https://github.com/Kunde21/markdownfmt/) (MIT license).
 
 ## Contributing
 
