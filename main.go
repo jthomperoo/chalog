@@ -34,19 +34,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 	releasesFileName       = "releases.txt"
 )
 
+type targetType string
+
+const (
+	targetTypeFile   targetType = "file"
+	targetTypeStdout targetType = "stdout"
+)
+
 const (
 	defaultIn         = ".changelog"
 	defaultOut        = "CHANGELOG.md"
 	defaultRepo       = ""
 	defaultUnreleased = "Unreleased"
 	defaultConfig     = ".chalog.yml"
+	defaultTarget     = targetTypeFile
 )
 
 type config struct {
-	In         string `yaml:"in"`
-	Out        string `yaml:"out"`
-	Repo       string `yaml:"repo"`
-	Unreleased string `yaml:"unreleased"`
+	In         string     `yaml:"in"`
+	Out        string     `yaml:"out"`
+	Repo       string     `yaml:"repo"`
+	Unreleased string     `yaml:"unreleased"`
+	Target     targetType `yaml:"target"`
 }
 
 func loadConfig(data []byte, conf *config) (*config, error) {
@@ -75,7 +84,9 @@ func main() {
 	unreleasedFlag := flag.String("unreleased", defaultUnreleased,
 		"the release name that should be treated as a the 'unreleased' section")
 	configFlag := flag.String("config", defaultConfig,
-		"the optional path to the config file to load")
+		"path to the config file to load")
+	targetFlag := flag.String("target", string(defaultTarget),
+		"target to output to, e.g. stdout or a file")
 
 	flag.Parse()
 
@@ -84,6 +95,7 @@ func main() {
 	repoOpt := *repoFlag
 	unreleasedOpt := *unreleasedFlag
 	configOpt := *configFlag
+	targetOpt := *targetFlag
 
 	// Read in config file
 	configData, err := ioutil.ReadFile(configOpt)
@@ -98,6 +110,7 @@ func main() {
 		Out:        outOpt,
 		Repo:       repoOpt,
 		Unreleased: unreleasedOpt,
+		Target:     targetType(targetOpt),
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -281,7 +294,7 @@ func main() {
 		}
 		for categoryName, category := range release.categories {
 			output += fmt.Sprintf("### %s\n", categoryName)
-			output += fmt.Sprintf("%s", category)
+			output += fmt.Sprintf("%s\n", category)
 		}
 	}
 
@@ -307,5 +320,18 @@ func main() {
 		}
 	}
 
-	err = ioutil.WriteFile(conf.Out, []byte(output+"\n"), 0644)
+	output += "\n"
+
+	switch conf.Target {
+	case targetTypeFile:
+		err = ioutil.WriteFile(conf.Out, []byte(output), 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+	case targetTypeStdout:
+		fmt.Print(output)
+	default:
+		log.Fatalf("unknown target type '%s' provided", conf.Target)
+	}
+
 }
