@@ -36,11 +36,11 @@ file will be ignored.
 If using a Go development environment, chalog can be installed by running:
 
 ```bash
-go install github.com/jthomperoo/chalog@v0.1.0
+go install github.com/jthomperoo/chalog@v0.2.0
 ```
 
-Otherwise, the packaged binaries can be used, [check out the available binaries for `v0.1.0` from the GitHub releases
-page here](https://github.com/jthomperoo/chalog/releases/tag/v0.1.0).
+Otherwise, the packaged binaries can be used, [check out the available binaries for `v0.2.0` from the GitHub releases
+page here](https://github.com/jthomperoo/chalog/releases/tag/v0.2.0).
 
 ## Quick start
 
