@@ -33,7 +33,12 @@ jobs:
         make test
 
         # Build and package
-        make
+        if [ ${{ github.event_name }} == "release" ]; then
+          VERSION="${{ github.event.release.tag_name }}"
+        else
+          VERSION=$(git rev-parse --short ${{ github.sha }})
+        fi
+        make VERSION="${VERSION}"
         make zip
 
         # Generate the changelog

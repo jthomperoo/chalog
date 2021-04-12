@@ -21,6 +21,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// Version specifies the chalog tool version, overridden at build time
+var Version string = "development"
+
 const (
 	changelogTemplate = `# Changelog
 All notable changes to this project will be documented in this file.
@@ -48,6 +51,7 @@ const (
 	flagUnreleased = "unreleased"
 	flagConfig     = "config"
 	flagTarget     = "target"
+	flagVersion    = "version"
 )
 
 const (
@@ -57,6 +61,7 @@ const (
 	defaultUnreleased = "Unreleased"
 	defaultConfig     = ".chalog.yml"
 	defaultTarget     = targetTypeFile
+	defaultVersion    = false
 )
 
 type config struct {
@@ -105,20 +110,32 @@ func isFlagPassed(name string) bool {
 
 func main() {
 
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Usage: chalog [options]")
+		flag.PrintDefaults()
+	}
+
 	inFlag := flag.String(flagIn, defaultIn,
 		"the directory for storing the changelog files")
 	outFlag := flag.String(flagOut, defaultOut,
 		"the changelog file to output to")
 	repoFlag := flag.String(flagRepo, defaultRepo,
-		"the repository base url, include the protocol (http/https etc.)")
+		"the repository base url, include the protocol (http/https)")
 	unreleasedFlag := flag.String(flagUnreleased, defaultUnreleased,
 		"the release name that should be treated as a the 'unreleased' section")
 	configFlag := flag.String(flagConfig, defaultConfig,
 		"path to the config file to load")
 	targetFlag := flag.String(flagTarget, string(defaultTarget),
 		"target to output to, e.g. stdout or a file")
+	versionFlag := flag.Bool(flagVersion, defaultVersion,
+		"if the process should be skipped, instead printing the version info")
 
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Println(Version)
+		return
+	}
 
 	configFilePath := *configFlag
 
