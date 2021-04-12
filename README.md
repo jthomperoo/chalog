@@ -75,7 +75,7 @@ The chalog tool includes some configuration options that can be set by flags pro
 optional.
 
 ```
-Usage of chalog:
+Usage: chalog [options]
   -config string
     	path to the config file to load (default ".chalog.yml")
   -in string
@@ -83,11 +83,13 @@ Usage of chalog:
   -out string
     	the changelog file to output to (default "CHANGELOG.md")
   -repo string
-    	the repository base url, include the protocol (http/https etc.)
+    	the repository base url, include the protocol (http/https)
   -target string
     	target to output to, e.g. stdout or a file (default "file")
   -unreleased string
     	the release name that should be treated as a the 'unreleased' section (default "Unreleased")
+  -version
+    	if the process should be skipped, instead printing the version info
 ```
 
 ### Releases file
