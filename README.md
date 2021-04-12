@@ -77,13 +77,15 @@ optional.
 ```
 Usage of chalog:
   -config string
-    	the optional path to the config file to load (default ".chalog.yml")
+    	path to the config file to load (default ".chalog.yml")
   -in string
     	the directory for storing the changelog files (default ".changelog")
   -out string
     	the changelog file to output to (default "CHANGELOG.md")
   -repo string
     	the repository base url, include the protocol (http/https etc.)
+  -target string
+    	target to output to, e.g. stdout or a file (default "file")
   -unreleased string
     	the release name that should be treated as a the 'unreleased' section (default "Unreleased")
 ```
