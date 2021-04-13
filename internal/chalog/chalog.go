@@ -21,7 +21,8 @@ const (
 	changelogTemplate = `# Changelog
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).`
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+`
 	firstDiffTemplate      = "[%s]: %s/releases/tag/%s\n"
 	compareDiffTemplate    = "[%s]: %s/compare/%s...%s\n"
 	unreleasedDiffTemplate = "[%s]: %s/compare/%s...HEAD\n"
@@ -198,18 +199,18 @@ func (g *Generator) Generate(config *conf.Config) (string, error) {
 	// Create releases section
 	for _, release := range releases {
 		if release.meta != "" {
-			output += fmt.Sprintf("\n\n## [%s] - %s\n", release.name, release.meta)
+			output += fmt.Sprintf("\n## [%s] - %s\n", release.name, release.meta)
 		} else {
-			output += fmt.Sprintf("\n\n## [%s]\n", release.name)
+			output += fmt.Sprintf("\n## [%s]\n", release.name)
 		}
 		for categoryName, category := range release.categories {
 			output += fmt.Sprintf("### %s\n", categoryName)
-			output += strings.TrimPrefix(category, "\n")
+			output += strings.TrimSuffix(strings.TrimPrefix(category, "\n"), "\n") + "\n"
 		}
 	}
 
 	if config.Repo != "" {
-		output += "\n\n"
+		output += "\n"
 		// Create diffs for releases
 		for i, release := range releases {
 			if release.name == config.Unreleased {
