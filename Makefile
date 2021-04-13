@@ -59,7 +59,7 @@ beautify:
 
 integration_test:
 	@echo "=============Running integration tests============="
-	go test ./... -tags=integration
+	go clean -testcache && go test ./... -tags=integration
 
 unit_test:
 	@echo "=============Running unit tests============="

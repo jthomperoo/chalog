@@ -9,9 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [test]
 
-
 ## [v1.0.0] - 2020-12-25
-
 
 ## [v0.4.0-alpha] - 2019-12-25
 ### Added
@@ -24,9 +22,7 @@ This is code
 
 ## [v0.4.0] - 2018-12-25
 
-
 ## [v0.0.1] - 2017-12-25
-
 
 [dev]: https://github.com/jthomperoo/test_repo/compare/test...dev
 [test]: https://github.com/jthomperoo/test_repo/compare/v1.0.0...test
