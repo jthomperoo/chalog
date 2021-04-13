@@ -46,9 +46,7 @@ zip:
 	zip -r -j dist/chalog_windows_386.zip dist/windows_386
 	zip -r -j dist/chalog_windows_amd64.zip dist/windows_amd64
 
-test:
-	@echo "=============Running unit tests============="
-	go test ./... -cover
+test: unit_test integration_test
 
 lint:
 	@echo "=============Linting============="
@@ -58,3 +56,11 @@ beautify:
 	@echo "=============Beautifying============="
 	gofmt -s -w .
 	go mod tidy
+
+integration_test:
+	@echo "=============Running integration tests============="
+	go test ./... -tags=integration
+
+unit_test:
+	@echo "=============Running unit tests============="
+	go test ./... -tags=unit -cover
