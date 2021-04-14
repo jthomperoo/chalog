@@ -1,3 +1,5 @@
+// +build unit
+
 package conf_test
 
 import (
@@ -20,6 +22,7 @@ func TestNewConfig(t *testing.T) {
 				Repo:       conf.DefaultRepo,
 				Unreleased: conf.DefaultUnreleased,
 				Target:     conf.DefaultTarget,
+				Preamble:   conf.DefaultPreamble,
 			},
 		},
 	}
