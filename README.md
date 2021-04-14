@@ -140,11 +140,6 @@ repo: https://github.com/jthomperoo/chalog
 The configuration file is overridden by any command line options provided, so can act as sensible defaults that
 can be modified by adjusting command line options provided.
 
-## Libraries
-
-This project makes extensive use of a number of key libraries, including using a modified Markdown renderer taken from
-[github.com/Kunde21/markdownfmt](https://github.com/Kunde21/markdownfmt/) (MIT license).
-
 ## Contributing
 
 Feel free to contribute to this project, here's some useful info for getting set up.
