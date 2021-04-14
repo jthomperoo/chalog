@@ -85,6 +85,8 @@ Usage: chalog [options]
     	the directory for storing the changelog files (default ".changelog")
   -out string
     	the changelog file to output to (default "CHANGELOG.md")
+  -preamble string
+    	path to a file containing the preamble to insert at the start of the changelog
   -repo string
     	the repository base url, include the protocol (http/https)
   -target string

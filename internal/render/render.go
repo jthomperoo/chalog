@@ -8,12 +8,6 @@ import (
 )
 
 const (
-	changelogTemplate = `# Changelog
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic
-Versioning](https://semver.org/spec/v2.0.0.html).
-`
 	firstDiffTemplate      = "[%s]: %s/releases/tag/%s\n"
 	compareDiffTemplate    = "[%s]: %s/compare/%s...%s\n"
 	unreleasedDiffTemplate = "[%s]: %s/compare/%s...HEAD\n"
@@ -30,7 +24,7 @@ func NewRenderer() *Renderer {
 
 // Render takes in some configuration and a list of releases, and renders them into a changelog
 func (r *Renderer) Render(config *conf.Config, releases []release.Release) (string, error) {
-	output := changelogTemplate
+	output := config.Preamble
 	output += r.renderReleases(releases)
 
 	if config.Repo != "" {

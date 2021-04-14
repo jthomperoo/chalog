@@ -1,2 +1,3 @@
 repo: https://github.com/jthomperoo/test_repo
 in: .test_changelog/
+preamble: test_preamble.txt

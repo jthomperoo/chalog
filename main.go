@@ -22,12 +22,14 @@ const (
 	flagUnreleased = "unreleased"
 	flagConfig     = "config"
 	flagTarget     = "target"
+	flagPreamble   = "preamble"
 	flagVersion    = "version"
 )
 
 const (
-	defaultConfig  = ".chalog.yml"
-	defaultVersion = false
+	defaultConfig       = ".chalog.yml"
+	defaultPreambleFile = ""
+	defaultVersion      = false
 )
 
 type release struct {
@@ -65,6 +67,8 @@ func main() {
 		"path to the config file to load")
 	targetFlag := flag.String(flagTarget, string(conf.DefaultTarget),
 		"target to output to, e.g. stdout or a file")
+	preambleFileFlag := flag.String(flagPreamble, defaultPreambleFile,
+		"path to a file containing the preamble to insert at the start of the changelog")
 	versionFlag := flag.Bool(flagVersion, defaultVersion,
 		"if the process should be skipped, instead printing the version info")
 
@@ -105,6 +109,19 @@ func main() {
 	}
 	if isFlagPassed(flagTarget) {
 		config.Target = conf.TargetType(*targetFlag)
+	}
+	if isFlagPassed(flagPreamble) {
+		preamble, err := ioutil.ReadFile(*preambleFileFlag)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		config.Preamble = string(preamble)
+	} else if config.PreambleFile != nil {
+		preamble, err := ioutil.ReadFile(*config.PreambleFile)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		config.Preamble = string(preamble)
 	}
 
 	generator := chalog.NewGenerator()
