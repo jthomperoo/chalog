@@ -36,11 +36,11 @@ file will be ignored.
 If using a Go development environment, chalog can be installed by running:
 
 ```bash
-go install -ldflags="-X 'main.Version=v0.4.0'" github.com/jthomperoo/chalog@v0.4.0
+go install -ldflags="-X 'main.Version=v1.0.0'" github.com/jthomperoo/chalog@v1.0.0
 ```
 
-Otherwise, the packaged binaries can be used, [check out the available binaries for `v0.4.0` from the GitHub releases
-page here](https://github.com/jthomperoo/chalog/releases/tag/v0.4.0).
+Otherwise, the packaged binaries can be used, [check out the available binaries for `v1.0.0` from the GitHub releases
+page here](https://github.com/jthomperoo/chalog/releases/tag/v1.0.0).
 
 ## Quick start
 
@@ -70,7 +70,7 @@ releases, or adding new releases and check how the `CHANGELOG.md` file is genera
 For an example of a project using chalog, look at the chalog project itself - it uses itself to manage its changelog.
 
 You can see the latest generated changelog [attached as an asset to the latest
-release](https://github.com/jthomperoo/chalog/releases/tag/v0.4.0).
+release](https://github.com/jthomperoo/chalog/releases/tag/v1.0.0).
 
 ## Configuration
 
